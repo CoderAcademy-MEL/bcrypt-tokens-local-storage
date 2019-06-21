@@ -7,9 +7,10 @@ const { secrets } = require('../controllers/private-controller')
 
 router.use((req, res, next) => {
   const { token } = req.headers
-  // jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {
-  //   console.log(decoded.foo) // bar
-  // });
+  jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {
+    if (err) return res.send('incorrect token')
+    console.log(decoded)
+  });
   next()
 })
 
