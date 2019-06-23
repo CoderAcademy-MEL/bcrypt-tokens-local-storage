@@ -2,18 +2,22 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
-const { secrets } = require('../controllers/private-controller')
+const { secrets } = require('../controllers/private-controller');
 
+const checkToken = async (req, res, next) => {
+  const { token } = req.headers;
+  try {
+    const decoded = await jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded) {
+      next();
+    }
+  } catch(err) {
+    return res.status(403).send('incorrect token');
+  }
+}
 
-router.use((req, res, next) => {
-  const { token } = req.headers
-  jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {
-    if (err) return res.send('incorrect token')
-    console.log(decoded)
-  });
-  next()
-})
+router.use(checkToken)
 
-router.get('/secrets', secrets)
+router.get('/secrets', secrets);
 
 module.exports = router;

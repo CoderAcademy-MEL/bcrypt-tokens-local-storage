@@ -1,57 +1,53 @@
-const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose');
 const User = require('../models/User')
+const { checkPassword, generateUser, generateToken } = require('../utils/auth-utils')
 
-const generateToken = (payload) => {
-  return jwt.sign(payload, process.env.JWT_SECRET);
+// register post endpoint
+const register = async (req, res) => {
+  const { username, password, role } = req.body
+  if (username && password) {
+    try {
+      const query = await User.findOne({ name: username })
+      if (query === null) {
+        const user = await generateUser(username, password, role)
+        const token = await generateToken(user)
+        return res.send({ token })
+      } else {
+        return res.status(403).send('user already exists')
+      }
+    } catch(err) {
+      return res.status(404).send('an error occurred')
+    }
+  } else {
+    return res.status(403).send('incorrect credentials')
+  }
 }
 
-// auth post endpoint goes here
-const register = (req, res) => {
-  // object deconstruction to access username and password
-  const { username, password, role } = req.body
-  // search the database for the user with mongoose method like .findOne(), make sure the username doesn't already exist  
-  console.log(username, password)
+// login post endpoint
+const login = async (req, res) => {
+  const { username, password } = req.body
   if (username && password) {
-    User.findOne({ name: username })
-      .then((doc) => {
-        if (doc) {
-          console.log('hello')
-          console.log(doc)
-          return res.status(404).send('user already exists')
-        }
-        // create the new user using mongoose, method like .create()
-        if (!doc) {
-          const newUser = new User({
-            name: username,
-            password: password,
-            role: role
-          })
-          newUser.save((err) => {
-            if (err) {
-              return res.status(400).send('incorrect credentials entered') 
-            } else {
-              console.log('user successfully created')
-              // let payload = {
-              //   username
-              // }
-              // const token = generateToken(payload)
-              // return res.send({token: token})
-            }
-          })
+    try {
+      const query = await User.findOne({ name: username })
+      if (query !== null) {
+        const result = await checkPassword(password, query.password)
+        if (!result) {
+          return res.status(403).send('incorrect credentials')
         } else {
-          // if the username does exist send an error response
-          res.status(400).send('incorrect credentials (user exists)')
+          const token = await generateToken(query)
+          return res.send({ token })
         }
-      })
-      .catch((err) => {
-        res.status(400).send('incorrect credentials (no mongoose)')
-      })
+      } else {
+        return res.status(403).send('incorrect credentials')
+      }
+    } catch(err) {
+      return res.status(404).send('an error occurred')
+    }
   } else {
-    res.status(400).send('incorrect credentials')
+    return res.status(403).send('incorrect credentials')
   }
 }
 
 module.exports = {
-  register
+  register,
+  login
 }
