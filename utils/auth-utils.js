@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const User = require('../models/User')
 
 const generateHash = async (password) => {
   const saltRounds = 10;
@@ -21,7 +22,7 @@ const generateUser = async (username, password, role) => {
 }
 
 const generateAccessToken = async ({ name }) => {
-  return jwt.sign({ name }, process.env.JWT_SECRET, {expiresIn: 30});
+  return jwt.sign({ name }, process.env.JWT_SECRET, {expiresIn: '30s'});
 } 
 
 module.exports = {
