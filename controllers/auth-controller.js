@@ -24,6 +24,7 @@ const register = async (req, res) => {
 
 // login post endpoint
 const login = async (req, res) => {
+  console.log(req.body)
   const { username, password } = req.body
   if (username && password) {
     try {

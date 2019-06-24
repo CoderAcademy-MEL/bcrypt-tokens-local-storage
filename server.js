@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 require('dotenv').config();
+const cors = require('cors')
 
 const app = new express();
 
@@ -13,8 +14,11 @@ mongoose.connect('mongodb://localhost:27017/whatver-you-want-to-call-it', { useN
   }
 })
 
+// cors
+app.use(cors())
+
 // connect to router
 app.use(require('./routes'))
 
 // listen on port 3000
-app.listen(3000, () => console.log('listening on port 3000'))
+app.listen(5000, () => console.log('listening on port 5000'))
