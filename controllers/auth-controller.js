@@ -1,5 +1,5 @@
 const User = require('../models/User')
-const { checkPassword, generateUser, generateToken } = require('../utils/auth-utils')
+const { checkPassword, generateUser, generateAccessToken } = require('../utils/auth-utils')
 
 // register post endpoint
 const register = async (req, res) => {
@@ -9,7 +9,7 @@ const register = async (req, res) => {
       const query = await User.findOne({ name: username })
       if (query === null) {
         const user = await generateUser(username, password, role)
-        const token = await generateToken(user)
+        const token = await generateAccessToken(user)
         return res.send({ token })
       } else {
         return res.status(403).send('user already exists')
@@ -33,7 +33,7 @@ const login = async (req, res) => {
         if (!result) {
           return res.status(403).send('incorrect credentials')
         } else {
-          const token = await generateToken(query)
+          const token = await generateAccessToken(query)
           return res.send({ token })
         }
       } else {
